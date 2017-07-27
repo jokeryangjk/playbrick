@@ -25,7 +25,7 @@ var Paddle = function(){
 	var o = {
 		image: image,
 		x: 100,
-		y: 200,
+		y: 250,
 		speed: 15,
 	}
 	var paddle = o
@@ -39,13 +39,41 @@ var Paddle = function(){
 }
 
 var GuaGame = function(){
-	var g = {}
+	var g = {
+		actions: {},
+		keydowns: {},
+	}
 	var canvas = document.querySelector('#id-canvas')
 	var context = canvas.getContext('2d')
 	g.canvas = canvas
 	g.context = context
+	// draw
+	g.drawImage = function(guaImage){
+		g.context.drawImage(guaImage.image, guaImage.x, guaImage.y)
+	}
+	// events
+	window.addEventListener('keydown', function(event){
+		g.keydowns[event.key] = true
+	})
+	window.addEventListener('keyup', function(event){
+		g.keydowns[event.key] = false
+	})
+	// 
+	g.registerAction = function(key, callback){
+		g.actions[key] = callback
+	}
+	// timer
 
 	setInterval(function(){
+		// events
+		var actions = Object.keys(g.actions)
+		for(var i = 0; i < actions.length; i++){
+			var key = actions[i]
+			if(g.keydowns[key]){
+				// 如果案件被按下， 调用注册的 action
+				g.actions[key]()
+			}
+		}
 		// update
 		g.update()
 		// clear
@@ -59,44 +87,16 @@ var _main = function(){
 	var game = GuaGame()
 	var paddle = Paddle()
 
-	var leftDown = false
-	var rightDown = false
-	// events
-	window.addEventListener('keydown',function(event){
-		log('keydown')
-		var k = event.key
-		//log(event)
-		if(k == 'a'){
-			leftDown = true
-		}else if(k == 'd'){
-			rightDown = true
-		}
-
+	game.registerAction('a', function(){
+		paddle.moveLeft()
 	})
-
-	window.addEventListener('keyup',function(event){
-		log('keyup')
-		var k = event.key
-		//log(event)
-		if(k == 'a'){
-			leftDown = false
-		}else if(k == 'd'){
-			rightDown = false
-		}
-
+	game.registerAction('d', function(){
+		paddle.moveRight()
 	})
-
-	game.update = function(){
-		//update x 
-		if(leftDown){
-			paddle.moveLeft()	
-		}else if(rightDown){
-			paddle.moveRight()
-		}
-	}
+	game.update = function(){}
 	game.draw = function(){
 		//draw
-		game.context.drawImage(paddle.image, paddle.x, paddle.y)
+		game.drawImage(paddle)
 	}
 }
 
